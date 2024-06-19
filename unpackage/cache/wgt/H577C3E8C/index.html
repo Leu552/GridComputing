@@ -1,0 +1,164 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>网格价格计算器</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <link href="css/mui.css" rel="stylesheet" />
+    <style>
+        body {
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+        }
+
+        .mui-input-row {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .mui-input-row label {
+            width: 50%;
+            margin-right: 10px;
+        }
+		
+		.mui-input-row input {
+		    width: 50%;
+		    margin-right: 10px;
+		}
+
+        .mui-input-clear {
+            flex: 1;
+            border: none;
+            outline: none;
+        }
+
+        .result-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .result {
+            flex: 1;
+            padding: 10px;
+            margin: 0 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            white-space: pre-wrap;
+        }
+
+        .result-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        button {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="mui-content container">
+        <div class="header">
+            <h1>网格价格计算器</h1>
+            <div>
+                <label for="compoundSwitch" style="margin-right: 10px;">复利计算:</label>
+                <div id="compoundSwitch" class="mui-switch mui-active">
+                    <div class="mui-switch-handle"></div>
+                </div>
+            </div>
+        </div>
+        <div class="mui-input-row">
+            <label>起始价格:</label>
+            <input type="number" id="startPrice" class="mui-input-clear" placeholder="输入起始价格">
+        </div>
+        <div class="mui-input-row">
+            <label>跌幅 (%):</label>
+            <input type="number" id="dropPercentage" class="mui-input-clear" placeholder="输入跌幅百分比">
+        </div>
+        <div class="mui-input-row">
+            <label>涨幅 (%):</label>
+            <input type="number" id="risePercentage" class="mui-input-clear" placeholder="输入涨幅百分比">
+        </div>
+        <div class="mui-input-row">
+            <label>阶梯数:</label>
+            <input type="number" id="numSteps" class="mui-input-clear" placeholder="输入阶梯数">
+        </div>
+        <button id="calculateButton" class="mui-btn mui-btn-primary mui-btn-block">计算</button>
+        <div class="result-container">
+            <div class="result" id="dropResults">
+                <div class="result-title">跌幅结果:</div>
+            </div>
+            <div class="result" id="riseResults">
+                <div class="result-title">涨幅结果:</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/mui.js"></script>
+    <script type="text/javascript">
+        mui.init();
+
+        document.getElementById('calculateButton').addEventListener('click', function () {
+            const startPrice = parseFloat(document.getElementById('startPrice').value);
+            const dropPercentage = parseFloat(document.getElementById('dropPercentage').value);
+            const risePercentage = parseFloat(document.getElementById('risePercentage').value);
+            const numSteps = parseInt(document.getElementById('numSteps').value);
+            const compoundInterest = document.getElementById('compoundSwitch').classList.contains('mui-active');
+
+            if (isNaN(startPrice) || isNaN(dropPercentage) || isNaN(risePercentage) || isNaN(numSteps)) {
+                alert('请输入有效数字。');
+                return;
+            }
+
+            let dropPrices = [startPrice];
+            let risePrices = [startPrice];
+
+            for (let i = 1; i < numSteps; i++) {
+                let nextDropPrice, nextRisePrice;
+                if (compoundInterest) {
+                    nextDropPrice = dropPrices[dropPrices.length - 1] * (1 - dropPercentage / 100);
+                    nextRisePrice = nextDropPrice * (1 + risePercentage / 100);
+                } else {
+                    nextDropPrice = startPrice * (1 - dropPercentage / 100 * i);
+                    nextRisePrice = nextDropPrice * (1 + risePercentage / 100);
+                }
+                dropPrices.push(nextDropPrice);
+                risePrices.push(nextRisePrice);
+            }
+
+            let dropResultText = dropPrices.map((price, index) => `跌 ${index + 1} 阶: ${price.toFixed(2)}`).join('\n');
+            let riseResultText = risePrices.map((price, index) => `涨 ${index + 1} 阶: ${price.toFixed(2)}`).join('\n');
+
+            document.getElementById('dropResults').textContent = dropResultText;
+            document.getElementById('riseResults').textContent = riseResultText;
+        });
+    </script>
+</body>
+
+</html>
